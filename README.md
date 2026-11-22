@@ -457,26 +457,4 @@ git push origin feature/AmazingFeature
 Please follow [Conventional Commits](https://www.conventionalcommits.org/) for commit messages.
 
 ---
-
-## 📄 License
-
-Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for more information.
-
----
-
-<div align="center">
-
-<br/>
-
-**Built with 💜 by [MahmoudBahnsey ](https://github.com/mahmoudbahnsey)**
-
-<br/>
-
-⭐ If you found this project helpful, please consider giving it a star!
-
-<br/>
-
-[![GitHub stars](https://img.shields.io/github/stars/your-username/flex-zone?style=social)](https://github.com/your-username/flex-zone)
-[![GitHub forks](https://img.shields.io/github/forks/your-username/flex-zone?style=social)](https://github.com/your-username/flex-zone/fork)
-
 </div>
