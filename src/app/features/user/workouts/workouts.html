@@ -1,0 +1,86 @@
+<div class="workouts-page">
+  <!-- Header -->
+  <div class="page-hero">
+    <h1>🏋️ Workout <span>Library</span></h1>
+    <p>{{ allWorkouts().length }} science-backed workout plans for every goal and fitness level.</p>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-bar">
+    <!-- Search -->
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Search workouts, muscles..." [value]="searchQuery()" (input)="onSearch($any($event.target).value)">
+    </div>
+
+    <!-- Category Tabs -->
+    <div class="filter-tabs">
+      @for (cat of categories(); track cat) {
+        <button class="tag" [class.active]="activeCategory() === cat" (click)="setCategory(cat)">
+          {{ cat }}
+        </button>
+      }
+    </div>
+
+    <!-- Difficulty -->
+    <div class="filter-tabs">
+      @for (d of difficulties; track d) {
+        <button class="tag" [class.active]="activeDifficulty() === d" (click)="setDifficulty(d)"
+          [style.border-color]="d !== 'All' && activeDifficulty() === d ? getDifficultyColor(d) : ''"
+          [style.color]="d !== 'All' ? getDifficultyColor(d) : ''">
+          {{ d }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Results Count -->
+  <div class="results-count">
+    <span>Showing <strong>{{ filtered().length }}</strong> workout{{ filtered().length !== 1 ? 's' : '' }}</span>
+  </div>
+
+  <!-- Grid -->
+  @if (filtered().length > 0) {
+    <div class="workouts-grid">
+      @for (w of filtered(); track w.id) {
+        <div class="workout-card">
+          <div class="workout-banner">
+            <span class="category-badge">{{ w.category }}</span>
+            <span class="rating-badge">⭐ {{ w.rating }}</span>
+            <div class="workout-emoji">{{ getCategoryEmoji(w.category) }}</div>
+          </div>
+          <div class="workout-body">
+            <h3>{{ w.name }}</h3>
+            <p>{{ w.description }}</p>
+            <div class="workout-tags">
+              @for (m of (w.targetMuscles || []).slice(0,3); track m) {
+                <span class="tag" style="font-size:0.7rem; padding:2px 8px;">{{ m }}</span>
+              }
+            </div>
+            <div class="workout-stats">
+              <div class="ws-item"><span>🔥</span><span>{{ w.exercises.length }} Exercises</span></div>
+              <div class="ws-item"><span>⏱️</span><span>{{ w.duration }}min</span></div>
+              <div class="ws-item"><span>💪</span><span>{{ w.calories }} kcal</span></div>
+            </div>
+            <div class="workout-footer">
+              <span class="difficulty-pill" [style.color]="getDifficultyColor(w.difficulty)"
+                [style.border-color]="getDifficultyColor(w.difficulty)">
+                {{ w.difficulty }}
+              </span>
+              <a [routerLink]="['/workouts', w.id]" class="btn-primary">View Plan →</a>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="empty-state">
+      <div class="empty-icon">🔍</div>
+      <h3>No workouts found</h3>
+      <p>Try a different search term or category filter.</p>
+      <button class="btn-ghost" (click)="onSearch(''); setCategory('All'); setDifficulty('All')">
+        Clear Filters
+      </button>
+    </div>
+  }
+</div>

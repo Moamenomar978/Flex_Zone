@@ -1,0 +1,132 @@
+@if (paymentService.isOpen()) {
+  <div class="pay-overlay" (click)="close()">
+    <div class="pay-modal" (click)="$event.stopPropagation()">
+
+      <!-- Header -->
+      <div class="pay-header">
+        <div class="pay-lock">🔒</div>
+        <div>
+          <h3>Secure Payment</h3>
+          <p>SSL encrypted · PCI compliant</p>
+        </div>
+        <button class="pay-close" (click)="close()">✕</button>
+      </div>
+
+      <!-- Item Summary -->
+      <div class="pay-item-summary">
+        <div class="pay-item-info">
+          <div class="pay-item-name">{{ paymentService.currentItem()?.name }}</div>
+          <div class="pay-item-desc">{{ paymentService.currentItem()?.description }}</div>
+        </div>
+        <div class="pay-item-price">${{ paymentService.currentItem()?.price }}</div>
+      </div>
+
+      @if (paymentService.success()) {
+        <!-- SUCCESS STATE -->
+        <div class="pay-success">
+          <div class="success-circle">✓</div>
+          <h3>Payment Successful!</h3>
+          <p>Your payment of <strong>${{ paymentService.currentItem()?.price }}</strong> was processed.</p>
+          <p class="success-sub">You now have access to <strong>{{ paymentService.currentItem()?.name }}</strong>.</p>
+          <button class="btn-primary w-full pay-done-btn" (click)="close()">
+            🎉 Done — Let's Go!
+          </button>
+        </div>
+      } @else {
+        <!-- PAYMENT METHOD TABS -->
+        <div class="pay-methods">
+          <button [class.active]="activeMethod()==='card'"   (click)="activeMethod.set('card')">💳 Card</button>
+          <button [class.active]="activeMethod()==='paypal'" (click)="activeMethod.set('paypal')">🅿️ PayPal</button>
+          <button [class.active]="activeMethod()==='apple'"  (click)="activeMethod.set('apple')">🍎 Apple Pay</button>
+        </div>
+
+        @if (activeMethod() === 'card') {
+          <!-- CARD FORM -->
+          <div class="pay-form">
+            <div class="card-preview">
+              <div class="card-chip">▮▮</div>
+              <div class="card-number-display font-orbitron">
+                {{ cardNumber() || '•••• •••• •••• ••••' }}
+              </div>
+              <div class="card-bottom">
+                <div>
+                  <div class="card-label">CARD HOLDER</div>
+                  <div class="card-value">{{ cardName() || 'YOUR NAME' }}</div>
+                </div>
+                <div>
+                  <div class="card-label">EXPIRES</div>
+                  <div class="card-value">{{ expiry() || 'MM/YY' }}</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Card Number</label>
+              <div class="pay-input-wrap">
+                <span class="pay-input-icon">💳</span>
+                <input type="text" [value]="cardNumber()" (input)="formatCard($event)"
+                  placeholder="1234 5678 9012 3456" maxlength="19" autocomplete="cc-number">
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>Expiry Date</label>
+                <input type="text" [value]="expiry()" (input)="formatExp($event)"
+                  placeholder="MM/YY" maxlength="5" autocomplete="cc-exp">
+              </div>
+              <div class="form-group">
+                <label>CVV <span class="cvv-hint">?</span></label>
+                <input type="password" [value]="cvv()" (input)="cvv.set($any($event.target).value.slice(0,4))"
+                  placeholder="•••" maxlength="4" autocomplete="cc-csc">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Name on Card</label>
+              <input type="text" [value]="cardName()" (input)="cardName.set($any($event.target).value)"
+                placeholder="Mahmoud Ahmed" autocomplete="cc-name">
+            </div>
+          </div>
+        }
+
+        @if (activeMethod() === 'paypal') {
+          <div class="pay-alt">
+            <div class="alt-icon">🅿️</div>
+            <p>You'll be redirected to PayPal to complete your payment securely.</p>
+            <div class="alt-amount">Amount: <strong>${{ paymentService.currentItem()?.price }}</strong></div>
+          </div>
+        }
+
+        @if (activeMethod() === 'apple') {
+          <div class="pay-alt">
+            <div class="alt-icon">🍎</div>
+            <p>Use Face ID or Touch ID to pay with Apple Pay instantly.</p>
+            <div class="alt-amount">Amount: <strong>${{ paymentService.currentItem()?.price }}</strong></div>
+          </div>
+        }
+
+        @if (error()) {
+          <div class="pay-error">⚠️ {{ error() }}</div>
+        }
+
+        <button class="btn-primary w-full pay-submit-btn"
+          [disabled]="paymentService.processing()"
+          (click)="pay()">
+          @if (paymentService.processing()) {
+            <span class="loading-spinner" style="width:20px;height:20px;border-width:2px;"></span>
+            Processing...
+          } @else {
+            🔒 Pay ${{ paymentService.currentItem()?.price }} Now
+          }
+        </button>
+
+        <div class="pay-security">
+          <span>🛡️ 256-bit SSL encryption</span>
+          <span>✓ No data stored</span>
+          <span>✓ Refundable</span>
+        </div>
+      }
+    </div>
+  </div>
+}

@@ -1,0 +1,140 @@
+<div class="challenges-page">
+
+  @if (toast()) {
+    <div class="toast toast-success">{{ toast() }}</div>
+  }
+
+  <div class="page-hero">
+    <div>
+      <h1>🏆 Challenges & <span>Leaderboard</span></h1>
+      <p>Join fitness challenges, earn XP, unlock badges and compete with the community.</p>
+    </div>
+    <div class="hero-xp">
+      <div class="xp-display">
+        <span class="xp-val font-orbitron">{{ currentUser()?.xp || 0 }}</span>
+        <span class="xp-label">Your XP</span>
+      </div>
+      <div class="rank-display">
+        <span class="rank-val font-orbitron">#{{ getUserRank() }}</span>
+        <span class="rank-label">Global Rank</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Active Challenges -->
+  @if (challenges().some(c => c.enrolled)) {
+    <div class="section-title">
+      <h2>🔥 Active Challenges</h2>
+    </div>
+    <div class="active-challenges">
+      @for (ch of challenges(); track ch.id) {
+        @if (ch.enrolled) {
+          <div class="active-challenge-card">
+            <div class="ac-left">
+              <div class="ac-badge">{{ ch.badge }}</div>
+              <div class="ac-info">
+                <h3>{{ ch.name }}</h3>
+                <div class="ac-day">Day {{ ch.currentDay }} / {{ ch.duration }}</div>
+              </div>
+            </div>
+            <div class="ac-right">
+              <div class="ac-progress-wrap">
+                <div class="ac-progress-bar">
+                  <div class="ac-progress-fill" [style.width]="getProgress(ch)+'%'"></div>
+                </div>
+                <span class="ac-percent">{{ getProgress(ch) }}%</span>
+              </div>
+              <div class="ac-xp">+{{ ch.xpReward }} XP on completion</div>
+            </div>
+          </div>
+        }
+      }
+    </div>
+  }
+
+  <!-- All Challenges -->
+  <div class="section-title" style="margin-top:40px;">
+    <h2>💪 All Challenges</h2>
+    <span class="badge badge-primary">{{ challenges().length }} available</span>
+  </div>
+
+  <div class="challenges-grid">
+    @for (ch of challenges(); track ch.id) {
+      <div class="challenge-card" [class.enrolled]="ch.enrolled">
+        <div class="challenge-header">
+          <div class="ch-badge-wrap">
+            <div class="ch-badge">{{ ch.badge }}</div>
+          </div>
+          <div class="ch-meta">
+            <span class="ch-category">{{ ch.category }}</span>
+            <span class="ch-duration">{{ ch.duration }} Days</span>
+          </div>
+        </div>
+        <h3>{{ ch.name }}</h3>
+        <p>{{ ch.description }}</p>
+
+        <div class="ch-stats">
+          <div class="ch-stat"><span>⏱️</span><span>{{ ch.duration }} days</span></div>
+          <div class="ch-stat"><span>⚡</span><span>+{{ ch.xpReward }} XP</span></div>
+          <div class="ch-stat"><span>🏅</span><span>{{ ch.badge }} Badge</span></div>
+        </div>
+
+        @if (ch.enrolled) {
+          <div class="ch-progress-section">
+            <div class="ch-progress-label">
+              <span>Progress</span>
+              <span>{{ getProgress(ch) }}%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width]="getProgress(ch)+'%'"></div>
+            </div>
+          </div>
+          <div class="ch-enrolled-badge">✓ Enrolled — Day {{ ch.currentDay }}/{{ ch.duration }}</div>
+        } @else {
+          <button class="btn-primary w-full" style="justify-content:center;" (click)="enroll(ch)">
+            <span>🎯</span> Join Challenge
+          </button>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Leaderboard -->
+  <div class="section-title" style="margin-top:56px;">
+    <h2>🏆 Leaderboard</h2>
+    <span class="badge badge-warning">Top 10</span>
+  </div>
+
+  <div class="leaderboard-card">
+    <div class="leaderboard-list">
+      @for (entry of leaderboard(); track entry.rank) {
+        <div class="lb-row" [class.current-user]="isCurrentUser(entry)">
+          <div class="lb-rank" [class.gold]="entry.rank===1" [class.silver]="entry.rank===2" [class.bronze]="entry.rank===3">
+            @if (entry.rank === 1) { 🥇 }
+            @else if (entry.rank === 2) { 🥈 }
+            @else if (entry.rank === 3) { 🥉 }
+            @else { {{ entry.rank }} }
+          </div>
+          <div class="lb-avatar">{{ entry.name.charAt(0) }}</div>
+          <div class="lb-name">
+            {{ entry.name }}
+            @if (isCurrentUser(entry)) { <span class="you-badge">You</span> }
+          </div>
+          <div class="lb-change">
+            @if (entry.change && entry.change > 0) { <span class="up">↑{{ entry.change }}</span> }
+            @else if (entry.change && entry.change < 0) { <span class="down">↓{{ Math.abs(entry.change!) }}</span> }
+            @else { <span class="same">—</span> }
+          </div>
+          <div class="lb-xp font-orbitron">{{ entry.xp | number }} XP</div>
+        </div>
+      }
+    </div>
+    @if (getUserRank() > 10) {
+      <div class="lb-user-row">
+        <span>Your current rank:</span>
+        <span class="font-orbitron" style="color:var(--primary-light)">#{{ getUserRank() }}</span>
+        <span>Keep earning XP to climb up!</span>
+      </div>
+    }
+  </div>
+</div>

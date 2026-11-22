@@ -1,0 +1,207 @@
+<div class="workout-detail-page">
+  @if (workout()) {
+
+    <!-- OVERVIEW MODE -->
+    @if (mode() === 'overview') {
+      <div class="overview-section">
+        <div class="back-nav">
+          <a routerLink="/workouts" class="back-link">← Back to Workouts</a>
+        </div>
+
+        <div class="overview-grid">
+          <!-- Left: Info -->
+          <div class="overview-info">
+            <div class="workout-hero-badge">{{ workout()!.category }}</div>
+            <h1>{{ workout()!.name }}</h1>
+            <p class="workout-desc">{{ workout()!.description }}</p>
+
+            <div class="workout-quick-stats">
+              <div class="qs-item"><span>⏱️</span><div><strong>{{ workout()!.duration }}</strong><small>minutes</small></div></div>
+              <div class="qs-item"><span>🔥</span><div><strong>{{ workout()!.calories }}</strong><small>calories</small></div></div>
+              <div class="qs-item"><span>🏋️</span><div><strong>{{ workout()!.exercises.length }}</strong><small>exercises</small></div></div>
+              <div class="qs-item"><span>⭐</span><div><strong>{{ workout()!.rating }}</strong><small>rating</small></div></div>
+            </div>
+
+            <div class="target-muscles">
+              <h4>Target Muscles</h4>
+              <div class="muscles-tags">
+                @for (m of workout()!.targetMuscles || []; track m) {
+                  <span class="tag">{{ m }}</span>
+                }
+              </div>
+            </div>
+
+            <div class="difficulty-row">
+              <span class="difficulty-badge"
+                [style.color]="getDifficultyColor(workout()!.difficulty)"
+                [style.border-color]="getDifficultyColor(workout()!.difficulty)">
+                {{ workout()!.difficulty }}
+              </span>
+              <span class="rating-display">⭐ {{ workout()!.rating }} Rating</span>
+            </div>
+
+            <button class="btn-primary start-btn" (click)="startWorkout()">
+              <span>▶️</span> Start Workout
+            </button>
+          </div>
+
+          <!-- Right: Exercise List -->
+          <div class="exercises-list">
+            <h3>Exercise Breakdown</h3>
+            @for (ex of workout()!.exercises; track ex.id; let i = $index) {
+              <div class="exercise-item">
+                <div class="ex-number">{{ i + 1 }}</div>
+                <div class="ex-info">
+                  <div class="ex-name">{{ ex.name }}</div>
+                  <div class="ex-muscle">{{ ex.muscle }} · {{ ex.equipment }}</div>
+                </div>
+                <div class="ex-detail">
+                  <div class="ex-sets-reps">{{ ex.sets }} × {{ ex.reps }}</div>
+                  <div class="ex-rest">Rest: {{ ex.rest }}s</div>
+                </div>
+                <span class="ex-diff" [style.color]="getDifficultyColor(ex.difficulty)">●</span>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ACTIVE WORKOUT MODE -->
+    @if (mode() === 'active') {
+      <div class="active-mode">
+        <div class="active-topbar">
+          <button class="btn-ghost btn-sm" (click)="mode.set('overview')">✕ Exit</button>
+          <div class="total-time font-orbitron">⏱️ {{ formatTime(totalTime()) }}</div>
+          <div class="overall-prog">
+            <span>{{ currentExIdx() + 1 }}/{{ totalExercises }}</span>
+          </div>
+        </div>
+
+        <div class="overall-bar">
+          <div class="overall-fill" [style.width]="overallProgress + '%'"></div>
+        </div>
+
+        <div class="active-content">
+          <div class="exercise-display">
+            <div class="ex-emoji">💪</div>
+            <h1 class="ex-title">{{ currentExercise?.name }}</h1>
+            <div class="ex-muscle-tag">{{ currentExercise?.muscle }} · {{ currentExercise?.equipment }}</div>
+
+            <div class="set-info">
+              <div class="set-badge">SET {{ currentSet() }} / {{ currentExercise?.sets }}</div>
+            </div>
+
+            <div class="reps-display">
+              <span class="reps-num font-orbitron">{{ currentExercise?.reps }}</span>
+              <span class="reps-label">REPS</span>
+            </div>
+
+            @if (currentExercise?.description) {
+              <p class="ex-description">{{ currentExercise?.description }}</p>
+            }
+
+            <div class="set-progress">
+              @for (s of getSetsArray(); track s; let i = $index) {
+                <div class="set-dot" [class.done]="i < currentSet() - 1" [class.active]="i === currentSet() - 1"></div>
+              }
+            </div>
+
+            <div class="active-controls">
+              <button class="btn-ghost" (click)="togglePause()">
+                {{ isPaused() ? '▶️ Resume' : '⏸️ Pause' }}
+              </button>
+              <button class="btn-primary complete-set-btn" (click)="completeSet()">
+                ✓ Complete Set
+              </button>
+            </div>
+          </div>
+
+          @if (nextExercise) {
+            <div class="next-exercise-preview">
+              <span>NEXT UP:</span>
+              <strong>{{ nextExercise.name }}</strong>
+              <span>{{ nextExercise.sets }}×{{ nextExercise.reps }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- REST TIMER MODE -->
+    @if (mode() === 'rest') {
+      <div class="rest-mode">
+        <div class="rest-content">
+          <div class="rest-label">REST TIME</div>
+          <div class="timer-ring">
+            <svg viewBox="0 0 120 120" class="ring-svg">
+              <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
+              <circle cx="60" cy="60" r="52" fill="none" stroke="url(#grad)" stroke-width="8"
+                stroke-dasharray="326.7"
+                [attr.stroke-dashoffset]="326.7 - (326.7 * getTimerPercent() / 100)"
+                stroke-linecap="round" transform="rotate(-90 60 60)"/>
+              <defs>
+                <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#6d28d9"/>
+                  <stop offset="100%" stop-color="#a78bfa"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <div class="timer-display font-orbitron">{{ formatTime(timerVal()) }}</div>
+          </div>
+
+          <p class="rest-next">Next: <strong>{{ currentExercise?.name }}</strong> · Set {{ currentSet() }}/{{ currentExercise?.sets }}</p>
+
+          <div class="rest-controls">
+            <button class="btn-ghost" (click)="togglePause()">
+              {{ isPaused() ? '▶️ Resume' : '⏸️ Pause' }}
+            </button>
+            <button class="btn-primary" (click)="skipRest()">Skip Rest →</button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- DONE MODE -->
+    @if (mode() === 'done') {
+      <div class="done-mode">
+        <div class="done-content">
+          <div class="done-trophy animate-float">🏆</div>
+          <h1>Workout Complete!</h1>
+          <p>Amazing job! You crushed it today. Keep up the momentum! 💪</p>
+
+          <div class="done-stats">
+            <div class="done-stat">
+              <span class="font-orbitron">{{ formatTime(totalTime()) }}</span>
+              <span>Total Time</span>
+            </div>
+            <div class="done-stat">
+              <span class="font-orbitron">{{ workout()!.exercises.length }}</span>
+              <span>Exercises</span>
+            </div>
+            <div class="done-stat">
+              <span class="font-orbitron">{{ workout()!.calories }}</span>
+              <span>Calories</span>
+            </div>
+            <div class="done-stat">
+              <span class="font-orbitron">+50</span>
+              <span>XP Earned</span>
+            </div>
+          </div>
+
+          <div class="done-actions">
+            <button class="btn-ghost" (click)="restartWorkout()">🔄 Do Again</button>
+            <a routerLink="/workouts" class="btn-primary">Browse More →</a>
+            <a routerLink="/progress" class="btn-outline">Log Progress</a>
+          </div>
+        </div>
+      </div>
+    }
+
+  } @else {
+    <div class="not-found-state">
+      <h2>Workout not found</h2>
+      <a routerLink="/workouts" class="btn-primary">← Back to Workouts</a>
+    </div>
+  }
+</div>

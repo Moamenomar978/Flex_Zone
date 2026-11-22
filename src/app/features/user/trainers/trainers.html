@@ -1,0 +1,102 @@
+<div class="trainers-page">
+
+  <!-- Trainer Profile Modal -->
+  @if (selected()) {
+    <div class="overlay" (click)="closeProfile()">
+      <div class="trainer-modal" (click)="$event.stopPropagation()">
+        <button class="modal-close" (click)="closeProfile()">✕</button>
+        <div class="modal-avatar">{{ initials(selected()!) }}</div>
+        <h2>{{ selected()!.name }}</h2>
+        <div class="modal-title">{{ selected()!.role }}</div>
+        <div class="modal-rating">
+          <span class="stars">{{ getStars(selected()!.rating) }}</span>
+          <span>{{ selected()!.rating }} · {{ selected()!.reviews }} reviews</span>
+        </div>
+        <p class="modal-bio">{{ selected()!.bio || 'Certified FlexZone trainer ready to help you reach your goals.' }}</p>
+        <div class="modal-section">
+          <h4>Specializations</h4>
+          <div class="spec-tags">
+            @for (s of selected()!.specialties; track s) {
+              <span class="tag">{{ s }}</span>
+            }
+          </div>
+        </div>
+        <div class="modal-section">
+          <h4>Certifications</h4>
+          <div class="cert-list">
+            @for (c of selected()!.certifications || []; track c) {
+              <div class="cert-item">🏅 {{ c }}</div>
+            }
+          </div>
+        </div>
+        <div class="modal-stats">
+          <div class="ms-item"><span class="font-orbitron">{{ selected()!.experience }}</span><small>Experience</small></div>
+          <div class="ms-item"><span class="font-orbitron">{{ selected()!.rating }}</span><small>Rating</small></div>
+          <div class="ms-item"><span class="font-orbitron">${{ sessionPrice(selected()!) }}</span><small>per session</small></div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn-primary" (click)="bookSession(selected()!)">
+            💳 Book · ${{ sessionPrice(selected()!) }}/session
+          </button>
+          <button class="btn-ghost" (click)="closeProfile()">Close</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <div class="page-hero">
+    <h1>👨‍🏫 Our <span>Trainers</span></h1>
+    <p>{{ trainers().length }} certified fitness professionals ready to guide your transformation.</p>
+  </div>
+
+  <!-- Filter -->
+  <div class="filter-bar">
+    @for (s of specializations().slice(0, 8); track s) {
+      <button class="tag" [class.active]="activeSpec() === s" (click)="activeSpec.set(s)">{{ s }}</button>
+    }
+  </div>
+
+  <!-- Grid -->
+  <div class="trainers-grid">
+    @for (t of filteredTrainers(); track t.id) {
+      <div class="trainer-card">
+        <div class="trainer-header">
+          <div class="trainer-avatar">{{ initials(t) }}</div>
+          <div class="trainer-badge">{{ t.experience }}</div>
+        </div>
+        <div class="trainer-body">
+          <h3>{{ t.name }}</h3>
+          <div class="trainer-title">{{ t.role }}</div>
+          <div class="trainer-rating">
+            <span class="stars">{{ getStars(t.rating) }}</span>
+            <span>{{ t.rating }} ({{ t.reviews }})</span>
+          </div>
+          <div class="trainer-specs">
+            @for (s of t.specialties.slice(0, 3); track s) {
+              <span class="tag">{{ s }}</span>
+            }
+          </div>
+          <div class="trainer-price">
+            <span class="price-val font-orbitron">${{ sessionPrice(t) }}</span>
+            <span class="price-period">/ session</span>
+          </div>
+        </div>
+        <div class="trainer-actions">
+          <button class="btn-ghost" (click)="openProfile(t)">View Profile</button>
+          @if (isSessionBooked(t.id)) {
+            <span class="session-booked-badge">✓ Session Booked</span>
+          } @else {
+            <button class="btn-primary" (click)="bookSession(t)">💳 ${{ sessionPrice(t) }}</button>
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- CTA -->
+  <div class="trainers-cta">
+    <h3>Can't find the right trainer?</h3>
+    <p>Contact us and our team will match you with the perfect coach for your goals.</p>
+    <a routerLink="/contact-us" class="btn-primary">📞 Contact Us</a>
+  </div>
+</div>
