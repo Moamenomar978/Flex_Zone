@@ -35,8 +35,8 @@
             <a routerLink="/profile" id="l-btn">{{ auth.currentUserSignal()?.name }}</a>
             <a href="#" id="r-btn" (click)="logout(); $event.preventDefault()">LOGOUT</a>
         } @else {
-            <a routerLink="/login" id="l-btn">LOGIN</a>
-            <a routerLink="/register" id="r-btn">JOIN NOW</a>
+          <a routerLink="/login" class="btn-ghost btn-sm">Login</a>
+          <a routerLink="/register" class="btn-primary btn-sm">Join Now</a>
         }
     </div>
 
