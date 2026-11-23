@@ -1,0 +1,39 @@
+name: Publish frontend to GitHub Pages
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.23.5'
+          cache: npm
+      - uses: actions/configure-pages@v5
+      - run: npm ci
+      - run: npm run build -- --configuration production --base-href /Flex_Zone/
+      - name: Preserve client-side navigation on refresh
+        run: cp dist/FlexZone/browser/index.html dist/FlexZone/browser/404.html
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist/FlexZone/browser
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy frontend
+        id: deployment
+        uses: actions/deploy-pages@v4
